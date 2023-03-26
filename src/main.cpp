@@ -1,5 +1,6 @@
-// Speichert mehere DS18B20 in InfluxDB2
-// ACHTUNG: Die verlöteten Sensoren haben eine komische Farb-Kanal-Belegung: 
+// Speichert mehrere DS18B20 in InfluxDB2
+// 
+// Der Sketch ist noch in einem "Work in Progress" - Zustand und gehört gründlich entrümpelt.
 /* 
 Wiring mit meinen geloeteten Temperatursensoren: 
 -----------------------------------------------
@@ -12,7 +13,6 @@ schwarz=5V
 
 #include <SPI.h>
 #include <Ethernet.h>
-// Einbinden der Bibliotheken
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -31,18 +31,12 @@ String sensorstring1, sensorstring2, sensorstring3, sensorstring4, sensorstring5
 
 // Network Settings
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xF0};
-// IPAddress ip(192, 168, 178, 58);
-// IPAddress gateway(192, 168, 178, 1);
-// IPAddress subnet(255, 255, 255, 0);
-// the IP address of your InfluxDB host
 IPAddress influxIP(192, 168, 178, 47);
 
 // the port that the InfluxDB UDP plugin is listening on
 unsigned int influxPort = 8086;
-// Variable für den UDP-String
 String line;
 EthernetClient client;
-// function to print a device address
 // function to print a device address
 String printSensorAddress(DeviceAddress deviceAddress)
 {
@@ -87,7 +81,7 @@ void setup(void)
   sensors.begin(); // Starten der Kommunikation mit dem Sensor
 
   sensorCount = sensors.getDeviceCount();             // Lesen der Anzahl der angeschlossenen Temperatursensoren.
-  for (byte i = 0; i < sensors.getDeviceCount(); i++) // die selbe Resolution auf alle sensoren speichern.
+  for (byte i = 0; i < sensors.getDeviceCount(); i++) // die selbe Resolution auf alle Sensoren speichern.
   {
     if (sensors.getAddress(sensorAddresses, i))
     {
@@ -162,24 +156,20 @@ void loop(void)
     Serial.println("Es wurde kein Temperatursensor gefunden!");
     Serial.println("Bitte überprüfe deine Schaltung!");
   }
-  // Es können mehr als 1 Temperatursensor am Datenbus angschlossen werden.
+  // Es können mehr als 1 Temperatursensor am Datenbus angeschlossen werden.
   // Anfordern der Temperaturwerte aller angeschlossenen Temperatursensoren.
   sensors.requestTemperatures();
 
   // Ausgabe aller Werte der angeschlossenen Temperatursensoren.
   for (int i = 0; i < sensorCount; i++)
   {
+    // for debugging:
     // Serial.print(i);
     // Serial.print(". Temperatur: ");
     // Serial.print(sensors.getTempCByIndex(i));
     // Serial.print("\xC2\xB0"); // shows degree symbol
     // Serial.println("C");
     // sensors.getAddress(sensorAddresses, i);
-
-    // line = String("temp,sensorid=" + SensorAddressString(i) + " temperature=" + String(sensors.getTempCByIndex(i)));
-    //nline = String("temp,sensorid=" + SensorAddressString(i) + " temperature=" + String(sensors.getTempCByIndex(i)));
-    //Serial.println(line);
-    //Serial.println(line.length());
 
     client.stop();
     if (client.connect(influxIP, influxPort))
@@ -194,10 +184,11 @@ void loop(void)
       client.print("Content-Length: ");
       client.println(String("temp,sensorid=" + SensorAddressString(i) + " temp=" + String(sensors.getTempCByIndex(i))).length());
       client.println(F("Content-Type: application/x-www-form-urlencoded"));
+      // for debugging:
       // Serial.println(line.length());
       client.println();
       client.println(String("temp,sensorid=" + SensorAddressString(i) + " temp=" + String(sensors.getTempCByIndex(i))));
-
+      // for debugging:
       //Serial.println(String("temp,sensorid=" + SensorAddressString(i) + " temperature=" + String(sensors.getTempCByIndex(i))).length());
       //Serial.println(String("temp,sensorid=" + SensorAddressString(i) + " temperature=" + String(sensors.getTempCByIndex(i))));
 
