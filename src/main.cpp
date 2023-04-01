@@ -1,6 +1,6 @@
 // Speichert mehrere DS18B20 in InfluxDB2
 // 
-// Der Sketch ist noch in einem "Work in Progress" - Zustand und gehört gründlich entrümpelt.
+//
 /* 
 Wiring mit meinen geloeteten Temperatursensoren: 
 -----------------------------------------------
@@ -24,10 +24,7 @@ OneWire oneWire(ONE_WIRE_BUS); //
 DallasTemperature sensors(&oneWire);
 int sensorCount;
 // arrays to hold device address
-DeviceAddress sensor1, sensor2, sensor3, sensor4, sensor5, sensor6, sensor7;
 DeviceAddress sensorAddresses;
-
-String sensorstring1, sensorstring2, sensorstring3, sensorstring4, sensorstring5, sensorstring6, sensorstring7;
 
 // Network Settings
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xF0};
@@ -55,6 +52,7 @@ String printSensorAddress(DeviceAddress deviceAddress)
   return oneWireAdress;
 }
 
+// function to print a device address for a given index
 String SensorAddressString(int index)
 {
   DeviceAddress sensoraddress;
@@ -77,7 +75,6 @@ String SensorAddressString(int index)
 void setup(void)
 {
   Serial.begin(9600); // Starten der seriellen Kommunikation mit 9600 baud
-  Serial.println("Temperatursensor - DS18B20");
   sensors.begin(); // Starten der Kommunikation mit dem Sensor
 
   sensorCount = sensors.getDeviceCount();             // Lesen der Anzahl der angeschlossenen Temperatursensoren.
@@ -92,7 +89,7 @@ void setup(void)
   // locate devices on the bus
   Serial.print("Locating devices...");
   Serial.print("Found ");
-  Serial.print(sensors.getDeviceCount(), DEC);
+  Serial.print(sensorCount);
   Serial.println(" devices.");
 
   // get DHCP
@@ -110,43 +107,6 @@ void setup(void)
     }
   }
   Serial.println(Ethernet.localIP());
-
-  if (!sensors.getAddress(sensor1, 0))
-    Serial.println("Unable to find address for Device 0");
-  if (!sensors.getAddress(sensor2, 1))
-    Serial.println("Unable to find address for Device 1");
-  if (!sensors.getAddress(sensor3, 2))
-    Serial.println("Unable to find address for Device 2");
-  if (!sensors.getAddress(sensor4, 3))
-    Serial.println("Unable to find address for Device 3");
-  if (!sensors.getAddress(sensor5, 4))
-    Serial.println("Unable to find address for Device 3");
-  if (!sensors.getAddress(sensor6, 5))
-    Serial.println("Unable to find address for Device 3");
-  if (!sensors.getAddress(sensor7, 6))
-    Serial.println("Unable to find address for Device 3");
-  // show the addresses we found on the bus
-  Serial.print("Device 0 Address: ");
-  sensorstring1 = printSensorAddress(sensor1);
-  Serial.println();
-  Serial.print("Device 1 Address: ");
-  sensorstring2 = printSensorAddress(sensor2);
-  Serial.println();
-  Serial.print("Device 2 Address: ");
-  sensorstring3 = printSensorAddress(sensor3);
-  Serial.println();
-  Serial.print("Device 3 Address: ");
-  sensorstring4 = printSensorAddress(sensor4);
-  Serial.println();
-  Serial.print("Device 4 Address: ");
-  sensorstring5 = printSensorAddress(sensor5);
-  Serial.println();
-  Serial.print("Device 5 Address: ");
-  sensorstring6 = printSensorAddress(sensor6);
-  Serial.println();
-  Serial.print("Device 6 Address: ");
-  sensorstring7 = printSensorAddress(sensor7);
-  Serial.println();
 }
 
 void loop(void)
@@ -156,7 +116,7 @@ void loop(void)
     Serial.println("Es wurde kein Temperatursensor gefunden!");
     Serial.println("Bitte überprüfe deine Schaltung!");
   }
-  // Es können mehr als 1 Temperatursensor am Datenbus angeschlossen werden.
+  // Es können mehr als ein Temperatursensor am Datenbus angeschlossen werden.
   // Anfordern der Temperaturwerte aller angeschlossenen Temperatursensoren.
   sensors.requestTemperatures();
 
@@ -195,7 +155,6 @@ void loop(void)
     }
     else
     {
-      // kf you didn't get a connection to the server:
       Serial.println("connection failed");
     }
   }
